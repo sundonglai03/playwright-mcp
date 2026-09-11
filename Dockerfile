@@ -10,7 +10,7 @@ RUN npm ci --omit=dev \
     && npx playwright install --no-shell chromium \
     && npm cache clean --force
 
-COPY cli.js package.json ./
+COPY cli.js ./
 
 RUN mkdir -p /home/node/playwright-output \
     && chown -R node:node /app /home/node/playwright-output /ms-playwright
