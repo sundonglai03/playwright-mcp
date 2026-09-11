@@ -6,8 +6,8 @@ ENV NODE_ENV=production \
 
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
-RUN ./node_modules/.bin/playwright install-deps chromium
-RUN ./node_modules/.bin/playwright install --no-shell chromium
+RUN node node_modules/playwright/cli.js install-deps chromium
+RUN node node_modules/playwright/cli.js install --no-shell chromium
 RUN npm cache clean --force
 
 COPY cli.js ./
