@@ -5,10 +5,10 @@ ENV NODE_ENV=production \
     PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev \
-    && npx playwright install-deps chromium \
-    && npx playwright install --no-shell chromium \
-    && npm cache clean --force
+RUN npm ci --omit=dev
+RUN ./node_modules/.bin/playwright install-deps chromium
+RUN ./node_modules/.bin/playwright install --no-shell chromium
+RUN npm cache clean --force
 
 COPY cli.js ./
 
