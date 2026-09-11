@@ -1,67 +1,24 @@
-ARG PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+FROM node:22-bookworm-slim
 
-# ------------------------------
-# Base
-# ------------------------------
-# Base stage: Contains only the minimal dependencies required for runtime
-# (node_modules and Playwright system dependencies)
-FROM node:22-bookworm-slim AS base
-
-ARG PLAYWRIGHT_BROWSERS_PATH
-ENV PLAYWRIGHT_BROWSERS_PATH=${PLAYWRIGHT_BROWSERS_PATH}
-
-# Set the working directory
 WORKDIR /app
+ENV NODE_ENV=production \
+    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
-RUN --mount=type=cache,target=/root/.npm,sharing=locked,id=npm-cache \
-    --mount=type=bind,source=package.json,target=package.json \
-    --mount=type=bind,source=package-lock.json,target=package-lock.json \
-  npm ci --omit=dev && \
-  # Install system dependencies for playwright
-  npx -y playwright-core install-deps chromium
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev \
+    && npx playwright install-deps chromium \
+    && npx playwright install --no-shell chromium \
+    && npm cache clean --force
 
-# ------------------------------
-# Builder
-# ------------------------------
-FROM base AS builder
+COPY cli.js package.json ./
 
-RUN --mount=type=cache,target=/root/.npm,sharing=locked,id=npm-cache \
-    --mount=type=bind,source=package.json,target=package.json \
-    --mount=type=bind,source=package-lock.json,target=package-lock.json \
-  npm ci
+RUN mkdir -p /home/node/playwright-output \
+    && chown -R node:node /app /home/node/playwright-output /ms-playwright
 
-# Copy the rest of the app
-COPY *.json *.js *.ts .
+USER node
+WORKDIR /home/node
 
-# ------------------------------
-# Browser
-# ------------------------------
-# Cache optimization:
-# - Browser is downloaded only when node_modules or Playwright system dependencies change
-# - Cache is reused when only source code changes
-FROM base AS browser
+EXPOSE 8931
 
-RUN npx -y playwright-core install --no-shell chromium
-
-# ------------------------------
-# Runtime
-# ------------------------------
-FROM base
-
-ARG PLAYWRIGHT_BROWSERS_PATH
-ARG USERNAME=node
-ENV NODE_ENV=production
-
-# Set the correct ownership for the runtime user on production `node_modules`
-RUN chown -R ${USERNAME}:${USERNAME} node_modules
-
-USER ${USERNAME}
-
-COPY --from=browser --chown=${USERNAME}:${USERNAME} ${PLAYWRIGHT_BROWSERS_PATH} ${PLAYWRIGHT_BROWSERS_PATH}
-COPY --chown=${USERNAME}:${USERNAME} cli.js package.json ./
-
-# Current working directory must be writable as MCP may need to create default output dir in it.
-WORKDIR /home/${USERNAME}
-
-# Run in headless and only with chromium (other browsers need more dependencies not included in this image)
-ENTRYPOINT ["node", "/app/cli.js", "--headless", "--browser", "chromium", "--no-sandbox"]
+ENTRYPOINT ["node", "/app/cli.js"]
+CMD ["--headless", "--browser", "chromium", "--no-sandbox", "--port", "8931", "--host", "0.0.0.0"]

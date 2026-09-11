@@ -1,0 +1,26 @@
+services:
+  playwright-mcp:
+    build: .
+    image: sundonglai/playwright-mcp:latest
+    container_name: playwright-mcp
+    restart: unless-stopped
+    init: true
+    ports:
+      - "127.0.0.1:8931:8931"
+    volumes:
+      - playwright-output:/home/node/playwright-output
+    environment:
+      PLAYWRIGHT_MCP_PROXY_SERVER: ${PLAYWRIGHT_MCP_PROXY_SERVER:-}
+      PLAYWRIGHT_MCP_PROXY_BYPASS: ${PLAYWRIGHT_MCP_PROXY_BYPASS:-}
+    command:
+      - --headless
+      - --browser
+      - chromium
+      - --no-sandbox
+      - --port
+      - "8931"
+      - --host
+      - 0.0.0.0
+
+volumes:
+  playwright-output:
