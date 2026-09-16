@@ -19,6 +19,7 @@ docker compose down
 - 地址：`http://127.0.0.1:8931/mcp`
 - 浏览器：Chromium headless
 - 输出目录：Docker volume `playwright-output`
+- 健康检查：容器内 TCP 8931
 
 MCP 客户端配置：
 
