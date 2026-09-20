@@ -1,39 +1,46 @@
 # Playwright MCP
 
-Playwright 浏览器自动化 MCP Server。当前按 Docker 长驻服务使用，默认启用无头 Chromium，并通过 MCP HTTP 端点提供服务。
+Playwright 浏览器自动化 MCP Server。默认按服务器 Docker 长驻服务使用，启用无头 Chromium，并通过 MCP HTTP 端点提供服务。
 
-## Docker 启动
+## 服务器部署
+
+在服务器上进入项目目录，一条命令即可启动：
 
 ```bash
-cd /path/to/playwright-mcp
 docker compose up -d --build
-docker compose logs -f playwright-mcp
+```
+
+查看状态和日志：
+
+```bash
 docker compose ps
-docker compose down
+docker compose logs -f playwright-mcp
 ```
 
 默认配置：
 
 - 镜像：`sundonglai/playwright-mcp:latest`
 - 容器：`playwright-mcp`
-- 地址：`http://127.0.0.1:8931/mcp`
+- 地址：`http://<服务器IP>:8931/mcp`
 - 浏览器：Chromium headless
 - 输出目录：Docker volume `playwright-output`
 - 健康检查：容器内 TCP 8931
+- 网络：监听所有网卡，不校验 Host
 
-MCP 客户端配置：
+Agent 只需配置 URL，不需要自定义 `Host` 或其他 Headers：
 
 ```json
 {
   "mcpServers": {
     "playwright": {
-      "url": "http://127.0.0.1:8931/mcp"
+      "url": "http://<服务器IP>:8931/mcp"
     }
   }
 }
 ```
 
-默认只绑定宿主机回环地址。局域网部署时，将端口改为 `8931:8931`，并使用服务器实际地址；跨机器访问应放在认证和 HTTPS 反向代理后面。
+如服务器开启了防火墙或云安全组，放行 TCP `8931` 即可。当前配置优先快速接入，
+未增加认证和 HTTPS，不要直接暴露到不可信公网。
 
 ## 代理配置
 
@@ -83,6 +90,7 @@ node cli.js --headless --browser chromium --port 8931 --host 127.0.0.1
 --browser chromium          使用 Chromium
 --host 0.0.0.0              监听所有网卡
 --port 8931                 HTTP 端口
+--allowed-hosts '*'         允许任意 Host 访问
 --proxy-server <地址>       浏览器代理
 --proxy-bypass <列表>       不走代理的域名
 --isolated                  不持久化浏览器 profile

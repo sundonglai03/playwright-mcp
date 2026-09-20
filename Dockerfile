@@ -21,4 +21,4 @@ WORKDIR /home/node
 EXPOSE 8931
 
 ENTRYPOINT ["node", "/app/cli.js"]
-CMD ["--headless", "--browser", "chromium", "--no-sandbox", "--port", "8931", "--host", "0.0.0.0"]
+CMD ["--headless", "--browser", "chromium", "--no-sandbox", "--port", "8931", "--host", "0.0.0.0", "--allowed-hosts", "*"]
