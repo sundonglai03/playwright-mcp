@@ -14,15 +14,5 @@ services:
     environment:
       PLAYWRIGHT_MCP_PROXY_SERVER: ${PLAYWRIGHT_MCP_PROXY_SERVER:-}
       PLAYWRIGHT_MCP_PROXY_BYPASS: ${PLAYWRIGHT_MCP_PROXY_BYPASS:-}
-    healthcheck:
-      test:
-        - CMD
-        - node
-        - -e
-        - "const s=require('net').connect(8931,'127.0.0.1',()=>{s.end();process.exit(0)});s.on('error',()=>process.exit(1))"
-      interval: 30s
-      timeout: 5s
-      start_period: 15s
-      retries: 3
 volumes:
   playwright-output:
