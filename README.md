@@ -94,6 +94,7 @@ node cli.js --headless --browser chromium --port 8931 --host 127.0.0.1
 --proxy-server <地址>       浏览器代理
 --proxy-bypass <列表>       不走代理的域名
 --isolated                  不持久化浏览器 profile
+--ignore-https-errors       忽略证书错误（内网自签证书站点必带，已写进 Dockerfile CMD）
 ```
 
 完整参数：`node cli.js --help`
